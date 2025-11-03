@@ -31,14 +31,27 @@ const handleRequest = async (req: Request): Promise<Response> => {
     });
   }
 
-  const response = await fetch(svgUrl);
-  if (!response.ok) {
-    return new Response(`Failed to fetch SVG from ${svgUrl}: ${response.statusText}`, {
-      status: response.status,
-      statusText: response.statusText,
+  // Check cache first
+  const cache = caches.default;
+  const cacheKey = new Request(req.url, req);
+  let response = await cache.match(cacheKey);
+
+  if (response) {
+    // Return cached response with cache hit header
+    const cachedResponse = new Response(response.body, response);
+    cachedResponse.headers.set('X-Cache', 'HIT');
+    return cachedResponse;
+  }
+
+  // Cache miss - fetch and render SVG
+  const svgResponse = await fetch(svgUrl);
+  if (!svgResponse.ok) {
+    return new Response(`Failed to fetch SVG from ${svgUrl}: ${svgResponse.statusText}`, {
+      status: svgResponse.status,
+      statusText: svgResponse.statusText,
     });
   }
-  const body = await response.text();
+  const body = await svgResponse.text();
 
   await initWasm(wasm);
 
@@ -65,8 +78,21 @@ const handleRequest = async (req: Request): Promise<Response> => {
   const resvg = new Resvg(body, opts);
   const pngData = resvg.render();
   const buf = pngData.asPng();
+
+  // Create response with cache headers
   // @ts-ignore
-  return new Response(buf, { headers: { 'content-type': 'image/png' } });
+  response = new Response(buf, {
+    headers: {
+      'content-type': 'image/png',
+      'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
+      'X-Cache': 'MISS'
+    }
+  });
+
+  // Store in cache
+  await cache.put(cacheKey, response.clone());
+
+  return response;
 };
 
 export default { fetch: handleRequest };
