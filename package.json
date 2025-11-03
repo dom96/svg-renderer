@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "cp ./node_modules/@resvg/resvg-wasm/index_bg.wasm ./src/index_bg.wasm",
+    "build": "sh build.sh",
     "dev": "npm run build && wrangler dev",
     "deploy": "npm run build && wrangler deploy"
   },

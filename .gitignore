@@ -1,3 +1,6 @@
 node_modules
 src/index_bg.wasm
 .wrangler
+*.zip
+*.ttf
+src/fonts
