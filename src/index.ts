@@ -12,6 +12,8 @@ import robotoMediumItalic from './fonts/web/static/Roboto-MediumItalic.ttf';
 import robotoThin from './fonts/web/static/Roboto-Thin.ttf';
 import robotoThinItalic from './fonts/web/static/Roboto-ThinItalic.ttf';
 
+let initWasmPromise: Promise<void> | null = null;
+
 const handleRequest = async (req: Request): Promise<Response> => {
   const url = new URL(req.url);
   if (url.pathname !== '/render') {
@@ -53,7 +55,10 @@ const handleRequest = async (req: Request): Promise<Response> => {
   }
   const body = await svgResponse.text();
 
-  await initWasm(wasm);
+  if (!initWasmPromise) {
+    initWasmPromise = initWasm(wasm);
+  }
+  await initWasmPromise;
 
   const opts = {
     font: {
