@@ -1,0 +1,21 @@
+{
+  "name": "svg2png-worker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "cp ./node_modules/@resvg/resvg-wasm/index_bg.wasm ./src/index_bg.wasm",
+    "dev": "npm run build && wrangler dev",
+    "deploy": "npm run build && wrangler deploy"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@resvg/resvg-wasm": "^2.6.2"
+  },
+  "devDependencies": {
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.4"
+  },
+  "type": "module"
+}
